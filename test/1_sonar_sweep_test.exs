@@ -1,21 +1,26 @@
 defmodule AoC.SonarSweepTest do
   use ExUnit.Case
-  @measurements [199, 200, 208, 210, 200, 207, 240, 269, 260, 263]
-  @measurements_file "input"
+  require Logger
+  @test_measurements "test_input"
+  @real_measurements "input"
 
-  test "example: counts depth measurement increases" do
-    assert AoC.SonarSweep.increases(@measurements) == 7
+  test "example: counts depth measurement part1" do
+    assert AoC.SonarSweep.part1(@test_measurements) == 7
   end
 
-  test "real data from file: counts depth measurement increases" do
-    assert is_integer(AoC.SonarSweep.increases(@measurements_file))
+  test "real data from file: counts depth measurement part1" do
+    results = AoC.SonarSweep.part1(@real_measurements)
+    Logger.info("part 1 results: #{results}")
+    assert is_integer(results)
   end
 
   test "example: sonar sweep sums" do
-    assert AoC.SonarSweep.window_increases(@measurements) == 5
+    assert AoC.SonarSweep.part2(@test_measurements) == 5
   end
 
-  test "real data from file: counts depth measurement window increases" do
-    assert is_integer(AoC.SonarSweep.window_increases(@measurements_file))
+  test "real data from file: counts depth measurement window part1" do
+    results = AoC.SonarSweep.part2(@real_measurements)
+    Logger.info("part 2 results: #{results}")
+    assert is_integer(results)
   end
 end
