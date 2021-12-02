@@ -9,6 +9,7 @@ defmodule AoC.Day02 do
     end)
   end
 
+  @spec part1(binary) :: number
   def part1(file) do
     movements =
       get_movements(file)
@@ -21,11 +22,13 @@ defmodule AoC.Day02 do
     (movements.down - movements.up) * movements.forward
   end
 
+  @spec part2(binary) :: number
   def part2(file) do
-    movements = get_movements(file) |> IO.inspect()
+    movements = get_movements(file)
     part2(movements, 0, 0, 0)
   end
 
+  @spec part2([], number, number, number) :: number
   def part2([], _aim, position, depth) do
     depth * position
   end
