@@ -23,4 +23,35 @@ defmodule AoC.Day03 do
 
     Integer.undigits(epsilon, 2) * Integer.undigits(gamma, 2)
   end
+
+  def part2(input) do
+    input = get_input(input)
+
+    oxygen_filter = fn one_count, length -> if one_count >= length / 2, do: 1, else: 0 end
+    scrubber_filter = fn one_count, length -> if one_count < length / 2, do: 1, else: 0 end
+
+    oxygen = filter(input, 0, oxygen_filter) |> Integer.undigits(2)
+    scrubber = filter(input, 0, scrubber_filter) |> Integer.undigits(2)
+
+    oxygen * scrubber
+  end
+
+  defp filter([last | []], _digit, _func), do: last
+
+  defp filter(list, current_digit, func) do
+    length = Enum.count(list)
+
+    one_count =
+      Enum.map(list, fn number -> Enum.at(number, current_digit) end)
+      |> Enum.sum()
+
+    most_common_digit = func.(one_count, length)
+
+    list =
+      Enum.filter(list, fn number ->
+        Enum.at(number, current_digit) == most_common_digit
+      end)
+
+    filter(list, current_digit + 1, func)
+  end
 end
