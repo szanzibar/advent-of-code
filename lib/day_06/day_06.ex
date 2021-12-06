@@ -27,16 +27,12 @@ defmodule AoC.Day06 do
   def part2(input) do
     list = get_input(input)
 
-    [
-      Enum.count(list, &(&1 == 0)),
-      Enum.count(list, &(&1 == 1)),
-      Enum.count(list, &(&1 == 2)),
-      Enum.count(list, &(&1 == 3)),
-      Enum.count(list, &(&1 == 4)),
-      Enum.count(list, &(&1 == 5)),
-      Enum.count(list, &(&1 == 6))
-    ]
-    |> next_day_new(0, 0, 0)
+    counts =
+      for x <- 0..8, into: [] do
+        Enum.count(list, &(&1 == x))
+      end
+
+    counts |> next_day_new(0, 0, 0)
   end
 
   defp next_day_new(fish_count, day, sevens, eights) when day == 256 do
