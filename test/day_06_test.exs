@@ -12,12 +12,12 @@ defmodule AoC.Day06.Test do
   test "real data: part1" do
     results = part1("input")
     Logger.info("part 1 results: #{results}")
-    assert is_integer(results)
+    assert results == 374_927
   end
 
-  @tag :d6p2
+  @tag :d6p2test
   test "example: part2" do
-    assert part2("test_input") == 12
+    assert part2("test_input") == 26_984_457_539
   end
 
   @tag :d6p2

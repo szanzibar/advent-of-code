@@ -9,7 +9,7 @@ defmodule AoC.Day06 do
     get_input(input) |> next_day(0) |> Enum.count()
   end
 
-  defp next_day(fishes, 80), do: fishes
+  defp next_day(fishes, day) when day == 80, do: fishes
 
   defp next_day(fishes, day) do
     Enum.flat_map(fishes, fn fish ->
@@ -24,5 +24,30 @@ defmodule AoC.Day06 do
     |> next_day(day + 1)
   end
 
-  def part2(_input), do: nil
+  def part2(input) do
+    list = get_input(input)
+
+    [
+      Enum.count(list, &(&1 == 0)),
+      Enum.count(list, &(&1 == 1)),
+      Enum.count(list, &(&1 == 2)),
+      Enum.count(list, &(&1 == 3)),
+      Enum.count(list, &(&1 == 4)),
+      Enum.count(list, &(&1 == 5)),
+      Enum.count(list, &(&1 == 6))
+    ]
+    |> next_day_new(0, 0, 0)
+  end
+
+  defp next_day_new(fish_count, day, sevens, eights) when day == 256 do
+    Enum.sum(fish_count) + sevens + eights
+  end
+
+  defp next_day_new(fish_count, day, sevens, eights) do
+    zero_at = rem(day, 7)
+    zero_count = Enum.at(fish_count, zero_at)
+
+    List.replace_at(fish_count, zero_at, zero_count + sevens)
+    |> next_day_new(day + 1, eights, zero_count)
+  end
 end
