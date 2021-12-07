@@ -7,10 +7,7 @@ defmodule AoC.Day07 do
 
   def part1(input) do
     calculate_fuel = fn list, align ->
-      Enum.map(list, fn x ->
-        abs(x - align)
-      end)
-      |> Enum.sum()
+      Enum.reduce(list, 0, &(abs(&1 - align) + &2))
     end
 
     get_input(input)
@@ -48,11 +45,10 @@ defmodule AoC.Day07 do
 
   def part2(input) do
     calculate_fuel = fn list, align ->
-      Enum.map(list, fn x ->
-        distance = abs(x - align)
-        for(y <- 1..distance, do: y) |> Enum.sum()
+      Enum.reduce(list, 0, fn n, acc ->
+        distance = abs(n - align)
+        round((Integer.pow(distance, 2) + distance) / 2) + acc
       end)
-      |> Enum.sum()
     end
 
     get_input(input)
