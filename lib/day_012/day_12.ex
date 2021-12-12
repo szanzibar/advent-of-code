@@ -1,39 +1,37 @@
 defmodule AoC.Day12 do
   def get_input(file) do
-    list =
-      File.read!(Path.join(__DIR__, file))
-      |> String.split("\n", trim: true)
-      |> Enum.flat_map(fn x ->
-        [a, b] = String.split(x, "-", trim: true)
-        [[a, b], [b, a]]
-      end)
-
-    remove =
-      Enum.filter(list, fn [a, b] ->
-        a == "start" || b == "end"
-      end)
-
-    list -- remove
+    File.read!(Path.join(__DIR__, file))
+    |> String.split("\n", trim: true)
+    |> Enum.flat_map(fn x ->
+      [a, b] = String.split(x, "-", trim: true)
+      [[a, b], [b, a]]
+    end)
+    |> Enum.filter(fn [last, first] ->
+      last != "start" && first != "end"
+    end)
   end
 
   def part1(input) do
-    pairs = get_input(input)
+    cave_pairs = get_input(input)
 
-    start = Enum.filter(pairs, fn [_back, front] -> front == "start" end)
+    start = Enum.filter(cave_pairs, fn [_back, front] -> front == "start" end)
 
-    filter = fn list, path -> valid_next_pair_part_1(list, path) end
+    filter = fn list, path -> valid_next_cave_part_1(list, path) end
 
-    next_cave(start, pairs, false, filter) |> Enum.count()
+    next_cave(start, cave_pairs, false, filter) |> Enum.count()
   end
 
   defp next_cave(current_paths, _, true, _) do
     current_paths |> Enum.filter(&(hd(&1) == "end"))
   end
 
-  defp next_cave(current_paths, pairs, _finished, filter) do
+  defp next_cave(current_paths, cave_pairs, _finished, filter) do
     new_paths =
       Enum.flat_map(current_paths, fn path ->
-        next_caves = Enum.filter(pairs, fn pair -> filter.(pair, path) end)
+        next_caves =
+          Enum.filter(cave_pairs, fn [back, front] ->
+            front == hd(path) && filter.(back, path)
+          end)
 
         case next_caves do
           [] -> [path]
@@ -41,44 +39,39 @@ defmodule AoC.Day12 do
         end
       end)
 
-    next_cave(new_paths, pairs, Enum.count(new_paths) == Enum.count(current_paths), filter)
+    next_cave(new_paths, cave_pairs, Enum.count(new_paths) == Enum.count(current_paths), filter)
   end
 
-  defp valid_next_pair_part_1([back, front], path) do
-    front == hd(path) && (is_uppercase(back) || !Enum.member?(path, back))
+  defp valid_next_cave_part_1(cave, path) do
+    is_uppercase(cave) || !Enum.member?(path, cave)
   end
 
-  defp valid_next_pair([back, front], path) do
-    cond do
-      front != hd(path) || hd(path) == "end" || hd(path) == "start" ->
-        false
-
-      is_uppercase(back) || !Enum.member?(path, back) ->
+  defp valid_next_cave(cave, path) do
+    case valid_next_cave_part_1(cave, path) do
+      true ->
         true
 
-      true ->
-        lower_case_filtered =
-          Enum.filter(path, &(&1 != "start" && &1 != "end" && !is_uppercase(&1)))
-
-        already_visited_small_cave = Enum.uniq(lower_case_filtered) != lower_case_filtered
-
-        case already_visited_small_cave do
-          true ->
-            valid_next_pair_part_1([back, front], path)
-
-          false ->
-            Enum.count(path, fn cave -> cave == back end) <= 1
+      false ->
+        case already_visited_small_cave(path) do
+          true -> false
+          false -> Enum.count(path, &(&1 == cave)) <= 1
         end
     end
   end
 
   defp is_uppercase(string), do: String.upcase(string) == string
 
-  def part2(input) do
-    pairs = get_input(input)
-    start = Enum.filter(pairs, fn [_back, front] -> front == "start" end)
-    filter = fn list, path -> valid_next_pair(list, path) end
+  defp already_visited_small_cave(path) do
+    lower_case_filtered = Enum.filter(path, &(&1 != "start" && &1 != "end" && !is_uppercase(&1)))
 
-    next_cave(start, pairs, 0, filter) |> Enum.count()
+    Enum.uniq(lower_case_filtered) != lower_case_filtered
+  end
+
+  def part2(input) do
+    cave_pairs = get_input(input)
+    start = Enum.filter(cave_pairs, fn [_back, front] -> front == "start" end)
+    filter = fn list, path -> valid_next_cave(list, path) end
+
+    next_cave(start, cave_pairs, 0, filter) |> Enum.count()
   end
 end
