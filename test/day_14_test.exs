@@ -12,7 +12,7 @@ defmodule AoC.Day14.Test do
   test "real data: part1" do
     results = part1("input")
     Logger.info("part 1 results: #{results}")
-    assert is_number(results)
+    assert results == 2194
   end
 
   @tag :d14p2

@@ -10,56 +10,72 @@ defmodule AoC.Day14 do
       |> Enum.map(fn rule ->
         [k, v] = String.split(rule, " -> ", trim: true)
 
-        first_letter = String.graphemes(k) |> Enum.at(0)
-        {k, first_letter <> v}
+        graphemes = String.graphemes(k)
+        first_letter = graphemes |> Enum.at(0)
+        last_letter = graphemes |> Enum.at(-1)
+        {k, [first_letter <> v, v <> last_letter]}
       end)
       |> Map.new()
-
-    template_last_letter = String.graphemes(template) |> Enum.at(-1)
-    rules = Map.put(rules, template_last_letter, template_last_letter)
 
     {template, rules}
   end
 
-  def part1(input) do
+  def part1(input), do: day_14_common(input, 10)
+
+  def part2(input), do: day_14_common(input, 40)
+
+  defp day_14_common(input, steps) do
     {template, rules} = get_input(input)
 
-    polymerize(template, rules, 10)
+    initial_template_counts(template)
+    |> polymerize(rules, steps)
+    |> get_element_counts()
+    |> add_last_element_back(template)
     |> min_max_difference()
   end
 
-  defp min_max_difference(template) do
-    {min, max} =
-      template
-      |> String.graphemes()
-      |> Enum.group_by(& &1)
-      |> Enum.map(fn {_k, v} ->
-        Enum.count(v)
-      end)
-      |> Enum.min_max()
+  defp map_merge_add(map1, map2), do: Map.merge(map1, map2, fn _k, v1, v2 -> v1 + v2 end)
 
-    max - min
+  defp initial_template_counts(template) do
+    String.graphemes(template)
+    |> Enum.chunk_every(2, 1, :discard)
+    |> Enum.map(&Enum.join(&1))
+    |> Enum.group_by(& &1)
+    |> Enum.map(fn {k, v} ->
+      {k, Enum.count(v)}
+    end)
+    |> Map.new()
   end
 
-  defp polymerize(template, _rules, 0), do: template
+  defp polymerize(counts, _rules, 0), do: counts
 
-  defp polymerize(template, rules, max_steps) do
-    max_steps |> IO.inspect(label: "steps left")
-
-    String.graphemes(template)
-    |> Enum.chunk_every(2, 1)
-    |> Enum.map(&Enum.join(&1))
-    |> Enum.map_join(fn chunk ->
-      rules[chunk]
+  defp polymerize(counts, rules, max_steps) do
+    Enum.map(counts, fn {k, count} ->
+      [new_pair_1, new_pair_2] = rules[k]
+      map_merge_add(%{new_pair_1 => count}, %{new_pair_2 => count})
     end)
-    |> IO.inspect(label: "template")
+    |> Enum.reduce(%{}, &map_merge_add(&1, &2))
     |> polymerize(rules, max_steps - 1)
   end
 
-  def part2(input) do
-    {template, rules} = get_input(input)
+  def get_element_counts(counts) do
+    Enum.map(counts, fn {k, v} ->
+      first_letter = String.graphemes(k) |> Enum.at(0)
+      %{first_letter => v}
+    end)
+    |> Enum.reduce(%{}, &map_merge_add(&1, &2))
+  end
 
-    polymerize(template, rules, 40)
-    |> min_max_difference()
+  defp add_last_element_back(counts, template) do
+    last_letter = String.graphemes(template) |> Enum.at(-1)
+    map_merge_add(counts, %{last_letter => 1})
+  end
+
+  defp min_max_difference(counts) do
+    {min, max} =
+      Enum.map(counts, fn {_k, v} -> v end)
+      |> Enum.min_max()
+
+    max - min
   end
 end
