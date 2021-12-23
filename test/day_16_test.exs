@@ -2,6 +2,7 @@ defmodule AoC.Day16.Test do
   use ExUnit.Case
   require Logger
   import AoC.Day16
+  import AoC.Day16_p2
 
   @tag :d16p1
   test "example: part1" do
@@ -25,6 +26,6 @@ defmodule AoC.Day16.Test do
     results = part2("input")
     Logger.info("part 2 results: \n#{results}")
 
-    assert results == 2825
+    assert results == 1_495_959_086_337
   end
 end
