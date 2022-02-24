@@ -1,21 +1,7 @@
-# AoC
+# Advent of Code
 
-**TODO: Add description**
+https://adventofcode.com/2021
 
-## Installation
+Most solutions were figured out without cheating. If I got help by looking at other solutions I specifically say so in the commit message or comments.
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `advent_of_code_2021` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:advent_of_code_2021, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/advent_of_code_2021](https://hexdocs.pm/advent_of_code_2021).
-
+Unfortunately the later days got too time consuming and life got in the way, but maybe I'll come back and finish these later.
