@@ -17,9 +17,7 @@ defmodule AoC2022.Day01 do
   """
   def part1(input_file) do
     get_input(input_file)
-    |> Enum.map(fn elf_calories ->
-      Enum.reduce(elf_calories, &(&1 + &2))
-    end)
+    |> Enum.map(&Enum.sum/1)
     |> Enum.max()
   end
 
@@ -33,9 +31,7 @@ defmodule AoC2022.Day01 do
   """
   def part2(input_file) do
     get_input(input_file)
-    |> Enum.map(fn elf_calories ->
-      Enum.reduce(elf_calories, &(&1 + &2))
-    end)
+    |> Enum.map(&Enum.sum/1)
     |> Enum.sort()
     |> Enum.take(-3)
     |> Enum.sum()

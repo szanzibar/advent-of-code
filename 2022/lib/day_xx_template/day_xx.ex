@@ -25,7 +25,6 @@ defmodule AoC2022.Dayxx do
       # nil
 
   """
-
   def part2(input_file) do
     get_input(input_file)
   end
