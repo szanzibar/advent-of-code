@@ -1,7 +1,7 @@
 defmodule AoC2022.Dayxx do
   alias AoC2022.Utils
 
-  defp get_input(file) do
+  def get_input(file) do
     File.read!(Path.join(__DIR__, file))
   end
 
