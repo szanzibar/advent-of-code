@@ -50,4 +50,49 @@ defmodule AoC2022.Day04 do
     end)
     |> Enum.sum()
   end
+
+  @doc """
+    Trying out the sets way. (Based on how Cody solved it, but without looking at his code.)
+
+      iex> part1_sets("test_input")
+      2
+
+      iex> part1_sets("input")
+      573
+
+  """
+  def part1_sets(input_file) do
+    get_input(input_file)
+    |> Enum.map(fn [[a, b], [x, y]] ->
+      first = MapSet.new(a..b)
+      second = MapSet.new(x..y)
+
+      MapSet.subset?(first, second) ||
+        MapSet.subset?(second, first)
+    end)
+    |> Enum.filter(& &1)
+    |> Enum.count()
+  end
+
+  @doc """
+    Trying out the sets way. (Based on how Cody solved it, but without looking at his code.)
+
+      iex> part2("test_input")
+      4
+
+      iex> part2("input")
+      867
+
+  """
+  def part2_sets(input_file) do
+    get_input(input_file)
+    |> Enum.map(fn [[a, b], [x, y]] ->
+      first = MapSet.new(a..b)
+      second = MapSet.new(x..y)
+
+      MapSet.intersection(first, second)
+    end)
+    |> Enum.filter(& &1)
+    |> Enum.count()
+  end
 end
