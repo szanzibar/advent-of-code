@@ -1,6 +1,4 @@
 defmodule AoC2022.Dayxx do
-  alias AoC2022.Utils
-
   def get_input(file) do
     File.read!(Path.join(__DIR__, file))
   end
@@ -9,8 +7,8 @@ defmodule AoC2022.Dayxx do
       iex> part1("test_input")
       nil
 
-      iex> part1("input")
-      nil
+      # iex> part1("input")
+      # nil
 
   """
   def part1(input_file) do

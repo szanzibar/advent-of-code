@@ -1,6 +1,4 @@
 defmodule AoC2022.Day01 do
-  alias AoC2022.Utils
-
   def get_input(file) do
     File.read!(Path.join(__DIR__, file))
     |> String.split("\n\n")
