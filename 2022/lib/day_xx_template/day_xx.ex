@@ -4,11 +4,11 @@ defmodule AoC2022.Dayxx do
   end
 
   @doc """
-      iex> part1("test_input")
-      nil
+    iex> part1("test_input")
+    nil
 
-      # iex> part1("input")
-      # nil
+    # iex> part1("input")
+    # nil
 
   """
   def part1(input_file) do
@@ -16,11 +16,11 @@ defmodule AoC2022.Dayxx do
   end
 
   @doc """
-      # iex> part2("test_input")
-      # nil
+    # iex> part2("test_input")
+    # nil
 
-      # iex> part2("input")
-      # nil
+    # iex> part2("input")
+    # nil
 
   """
   def part2(input_file) do
