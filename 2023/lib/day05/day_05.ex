@@ -105,6 +105,8 @@ defmodule AoC2023.Day05 do
         |> Enum.flat_map(&split_range/1)
       end)
 
+    IO.inspect(length(ranges), label: "batches")
+
     ranges
     |> Stream.with_index()
     |> Stream.map(fn {seed_range, index} ->
