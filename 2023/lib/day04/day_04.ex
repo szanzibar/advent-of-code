@@ -45,18 +45,17 @@ defmodule AoC2023.Day04 do
 
   """
   def part2(input_file) do
-    starting_cards =
-      get_input(input_file)
-      |> Enum.map(fn {winning_numbers, my_numbers} ->
-        MapSet.intersection(winning_numbers, my_numbers)
-        |> Enum.count()
-      end)
-      |> Enum.with_index()
-      |> Enum.map(fn {wins, num} -> {num + 1, {wins, 1}} end)
-      |> Map.new()
-      |> process_cards(1)
-      |> Enum.map(fn {_card_num, {_wins, count}} -> count end)
-      |> Enum.sum()
+    get_input(input_file)
+    |> Enum.map(fn {winning_numbers, my_numbers} ->
+      MapSet.intersection(winning_numbers, my_numbers)
+      |> Enum.count()
+    end)
+    |> Enum.with_index()
+    |> Enum.map(fn {wins, num} -> {num + 1, {wins, 1}} end)
+    |> Map.new()
+    |> process_cards(1)
+    |> Enum.map(fn {_card_num, {_wins, count}} -> count end)
+    |> Enum.sum()
   end
 
   defp process_cards(cards, card_num) when card_num > map_size(cards), do: cards
