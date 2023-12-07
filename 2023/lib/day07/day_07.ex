@@ -1,5 +1,5 @@
 defmodule AoC2023.Day07 do
-  @card_values ~w{A K Q J T 9 8 7 6 5 4 3 2} |> Enum.reverse() |> Enum.with_index() |> Map.new()
+  @card_values_1 ~w{A K Q J T 9 8 7 6 5 4 3 2} |> Enum.reverse() |> Enum.with_index() |> Map.new()
   @card_values_2 ~w{A K Q T 9 8 7 6 5 4 3 2 J} |> Enum.reverse() |> Enum.with_index() |> Map.new()
 
   def get_input(file) do
@@ -12,100 +12,14 @@ defmodule AoC2023.Day07 do
   end
 
   @doc """
-    # iex> part1("test_input")
-    # 6440
+    iex> part1("test_input")
+    6440
 
-    # iex> part1("input")
-    # 249204891
+    iex> part1("input")
+    249204891
 
   """
-  def part1(input_file) do
-    get_input(input_file)
-    |> Enum.sort(&sort_cards/2)
-    |> Enum.reverse()
-    |> Enum.with_index()
-    |> Enum.reduce(0, fn {{_hand, bid}, rank}, acc ->
-      (rank + 1) * bid + acc
-    end)
-  end
-
-  def sort_cards({left, _}, {right, _}) do
-    left_value = get_hand_strength(left)
-    right_value = get_hand_strength(right)
-
-    cond do
-      left_value > right_value ->
-        true
-
-      left_value < right_value ->
-        false
-
-      left_value == right_value ->
-        compare_equivalent_hand(left, right)
-    end
-  end
-
-  def compare_equivalent_hand(left, right) do
-    left =
-      String.codepoints(left)
-      |> Enum.map(fn card -> Map.fetch!(@card_values, card) end)
-
-    right =
-      String.codepoints(right)
-      |> Enum.map(fn card -> Map.fetch!(@card_values, card) end)
-
-    left >= right
-  end
-
-  @doc """
-  takes hand, returns hand type as integer strength
-  high card         0
-  one pair          1
-  two pair          2
-  three of a kind   3
-  full house        4
-  four of a kind    5
-  five of a kind    6
-  """
-  def get_hand_strength(hand) do
-    codepoints = String.codepoints(hand)
-    unique_cards = codepoints |> Enum.uniq() |> Enum.count()
-    groups = codepoints |> Enum.frequencies()
-
-    case unique_cards do
-      1 ->
-        # 5 of a kind (all the same)
-        6
-
-      2 ->
-        # 4 of a kind or full house
-        if Enum.any?(groups, fn {_card, amount} -> amount == 4 end) do
-          # 4 of a kind
-          5
-        else
-          # full house
-          4
-        end
-
-      3 ->
-        # three of a kind or 2 pair
-        if Enum.any?(groups, fn {_card, amount} -> amount == 3 end) do
-          # 3 of a kind
-          3
-        else
-          # 2 pair
-          2
-        end
-
-      4 ->
-        # one pair
-        1
-
-      5 ->
-        # high pair
-        0
-    end
-  end
+  def part1(input_file), do: partN(input_file, 1)
 
   @doc """
     iex> part2("test_input")
@@ -114,92 +28,59 @@ defmodule AoC2023.Day07 do
     iex> part2("input")
     249666369
   """
-  def part2(input_file) do
+  def part2(input_file), do: partN(input_file, 2)
+
+  defp partN(input_file, part) do
     get_input(input_file)
-    |> Enum.sort(&sort_cards_2/2)
-    |> Enum.reverse()
+    |> Enum.sort_by(&map_cards(&1, part))
     |> Enum.with_index()
     |> Enum.reduce(0, fn {{_hand, bid}, rank}, acc ->
       (rank + 1) * bid + acc
     end)
   end
 
-  def sort_cards_2({left, _}, {right, _}) do
-    left_value =
-      if String.contains?(left, "J"), do: get_hand_strength_2(left), else: get_hand_strength(left)
+  def map_cards({hand, _}, part) do
+    value = get_hand_strength(hand, part)
 
-    right_value =
-      if String.contains?(right, "J"),
-        do: get_hand_strength_2(right),
-        else: get_hand_strength(right)
+    key = if part == 1, do: @card_values_1, else: @card_values_2
+    tie_breaker = String.codepoints(hand) |> Enum.map(fn card -> Map.fetch!(key, card) end)
 
-    cond do
-      left_value > right_value ->
-        true
+    [value | tie_breaker]
+  end
 
-      left_value < right_value ->
-        false
+  def get_hand_strength("JJJJJ", _), do: 6
 
-      left_value == right_value ->
-        compare_equivalent_hand_2(left, right)
+  def get_hand_strength(hand, part) do
+    cards = String.codepoints(hand)
+    unique_card_count = cards |> Enum.uniq() |> Enum.count()
+
+    if part == 2 && String.contains?(hand, "J") do
+      {jokers, non_jokers} = cards |> Enum.split_with(fn c -> c == "J" end)
+
+      {_max_card, max_card_frequency} =
+        non_jokers |> Enum.frequencies() |> Enum.max_by(fn {_card, num} -> num end)
+
+      {unique_card_count - 1, max_card_frequency + Enum.count(jokers)}
+    else
+      {_max_card, highest_card_frequency} =
+        cards |> Enum.frequencies() |> Enum.max_by(fn {_card, num} -> num end)
+
+      {unique_card_count, highest_card_frequency}
     end
+    |> get_hand_strength()
   end
 
-  def get_hand_strength_2("JJJJJ"), do: 6
-
-  def get_hand_strength_2(hand) do
-    codepoints = String.codepoints(hand)
-    {jokers, cards} = codepoints |> Enum.split_with(fn c -> c == "J" end)
-    groups = cards |> Enum.frequencies()
-    {max_card, amount} = groups |> Enum.max_by(fn {_card, num} -> num end)
-    jokered_groups = Map.put(groups, max_card, amount + Enum.count(jokers))
-
-    unique_cards = map_size(jokered_groups)
-
-    case unique_cards do
-      1 ->
-        # 5 of a kind (all the same)
-        6
-
-      2 ->
-        # 4 of a kind or full house
-        if Enum.any?(jokered_groups, fn {_card, amount} -> amount == 4 end) do
-          # 4 of a kind
-          5
-        else
-          # full house
-          4
-        end
-
-      3 ->
-        # three of a kind or 2 pair
-        if Enum.any?(jokered_groups, fn {_card, amount} -> amount == 3 end) do
-          # 3 of a kind
-          3
-        else
-          # 2 pair
-          2
-        end
-
-      4 ->
-        # one pair
-        1
-
-      5 ->
-        # high pair
-        0
-    end
-  end
-
-  def compare_equivalent_hand_2(left, right) do
-    left =
-      String.codepoints(left)
-      |> Enum.map(fn card -> Map.fetch!(@card_values_2, card) end)
-
-    right =
-      String.codepoints(right)
-      |> Enum.map(fn card -> Map.fetch!(@card_values_2, card) end)
-
-    left >= right
-  end
+  @doc """
+  takes {unique_card_count, highest_card_frequency} and returns hand strength
+  examples:
+  {2, 4} -> 2 unique cards, 1 card occurs 4 times, (4 of a kind)
+  {3, 2} -> 3 unique cards, max of 2 each, 2 pairs
+  """
+  def get_hand_strength({1, _}), do: 6
+  def get_hand_strength({2, 4}), do: 5
+  def get_hand_strength({2, _}), do: 4
+  def get_hand_strength({3, 3}), do: 3
+  def get_hand_strength({3, _}), do: 2
+  def get_hand_strength({4, _}), do: 1
+  def get_hand_strength({5, _}), do: 0
 end
