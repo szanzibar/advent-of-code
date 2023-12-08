@@ -22,4 +22,4 @@ jobs:
         run: mix do deps.get, compile
 
       - name: Benchmark
-        run: mix run lib/day07/benchmark.exs
+        run: mix run lib/day08/benchmark.exs
