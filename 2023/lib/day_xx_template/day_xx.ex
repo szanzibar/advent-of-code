@@ -4,10 +4,10 @@ defmodule AoC2023.Dayxx do
   end
 
   @doc """
-    iex> part1("test_input")
+    iex> part1(AoC2023.Dayxx.Input.test_input())
     nil
 
-    # iex> part1("input")
+    # iex> part1(AoC2023.Dayxx.Input.input())
     # nil
 
   """
@@ -16,10 +16,10 @@ defmodule AoC2023.Dayxx do
   end
 
   @doc """
-    # iex> part2("test_input")
+    # iex> part2(AoC2023.Dayxx.Input.test_input())
     # nil
 
-    # iex> part2("input")
+    # iex> part2(AoC2023.Dayxx.Input.input())
     # nil
 
   """
