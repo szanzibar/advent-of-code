@@ -57,35 +57,36 @@ defmodule AoC2024.Day02 do
   """
   def part2(input) do
     parse_input(input)
-    |> Enum.map(fn line ->
-      check_line(line)
-    end)
-    |> Enum.count(&(&1.safe == true))
+    |> Enum.map(&check_line/1)
+    |> Enum.count(& &1.safe)
   end
 
-  defp check_line(line, one_bad_removed \\ false) do
-    reduce_acc = %{direction: nil, one_bad_removed: one_bad_removed, safe: true}
+  defp check_line(line, opts \\ []) do
+    reduce_init = %{
+      direction: nil,
+      one_bad_removed: Keyword.get(opts, :one_bad_removed, false),
+      safe: true
+    }
 
     line
     |> Enum.with_index()
     |> Enum.chunk_every(2, 1, :discard)
-    |> Enum.reduce_while(reduce_acc, fn [{l, l_index}, {r, r_index}], acc ->
-      diff = l - r
-      direction = if diff > 0, do: :decreasing, else: :increasing
-      valid_step? = abs(diff) in [1, 2, 3]
-      acc = if is_nil(acc.direction), do: %{acc | direction: direction}, else: acc
+    |> Enum.reduce_while(reduce_init, fn [{l, l_index}, {r, r_index}], acc ->
+      direction = if l > r, do: :decreasing, else: :increasing
+      valid_step? = abs(l - r) in [1, 2, 3]
 
       cond do
+        valid_step? && is_nil(acc.direction) ->
+          {:cont, %{acc | direction: direction}}
+
         valid_step? && direction == acc.direction ->
           {:cont, acc}
 
         !acc.one_bad_removed ->
-          ll_deleted = check_line(List.delete_at(line, l_index - 1), true)
-          left_deleted = check_line(List.delete_at(line, l_index), true)
-          right_deleted = check_line(List.delete_at(line, r_index), true)
-          rr_deleted = check_line(List.delete_at(line, r_index + 1), true)
-
-          if Enum.any?([ll_deleted.safe, left_deleted.safe, right_deleted.safe, rr_deleted.safe]) do
+          (l_index - 1)..(r_index + 1)
+          |> Enum.map(&check_line(List.delete_at(line, &1), one_bad_removed: true).safe)
+          |> Enum.any?()
+          |> if do
             {:halt, acc}
           else
             {:halt, %{acc | safe: false}}
