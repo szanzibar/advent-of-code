@@ -36,34 +36,21 @@ defmodule AoC2024.Day05 do
   """
 
   def parse_input(input) do
-    [rules, pages] = input |> String.trim() |> String.split("\n\n", trim: true)
+    [rules, page_list] =
+      input
+      |> String.trim()
+      |> String.split("\n\n")
+      |> Enum.map(fn section ->
+        section
+        |> String.split("\n")
+        |> Enum.map(fn rule -> String.split(rule, [",", "|"]) end)
+      end)
 
-    rule_map =
-      rules
-      |> String.split("\n", trim: true)
-      |> Enum.map(fn rule -> String.split(rule, "|", trim: true) end)
-      |> create_rule_map()
-
-    page_list =
-      pages
-      |> String.split("\n", trim: true)
-      |> Enum.map(fn line -> String.split(line, ",", trim: true) end)
-
-    [page_list, rule_map]
+    [create_rule_map(rules), page_list]
   end
 
   defp create_rule_map(rules) do
-    rules
-    |> Enum.map(fn [key, _] -> key end)
-    |> Enum.uniq()
-    |> Enum.map(fn key ->
-      greaters =
-        Enum.filter(rules, fn [left, _] -> left == key end)
-        |> Enum.map(fn [_, greater] -> greater end)
-
-      {key, greaters}
-    end)
-    |> Map.new()
+    Enum.group_by(rules, &List.first(&1), &List.last(&1))
   end
 
   defp sort_page_list(page_list, rule_map) do
@@ -98,10 +85,9 @@ defmodule AoC2024.Day05 do
 
   """
   def part1(input) do
-    [page_list, rule_map] = parse_input(input)
-    sorted_page_list = sort_page_list(page_list, rule_map)
+    [rule_map, page_list] = parse_input(input)
 
-    Enum.zip(page_list, sorted_page_list)
+    Enum.zip(page_list, sort_page_list(page_list, rule_map))
     |> Enum.filter(fn {un_sorted, sorted} -> un_sorted == sorted end)
     |> Enum.map(fn {valid_pages, _} -> valid_pages end)
     |> middle_sum()
@@ -116,10 +102,9 @@ defmodule AoC2024.Day05 do
 
   """
   def part2(input) do
-    [page_list, rule_map] = parse_input(input)
-    sorted_page_list = sort_page_list(page_list, rule_map)
+    [rule_map, page_list] = parse_input(input)
 
-    Enum.zip(page_list, sorted_page_list)
+    Enum.zip(page_list, sort_page_list(page_list, rule_map))
     |> Enum.reject(fn {un_sorted, sorted} -> un_sorted == sorted end)
     |> Enum.map(fn {_, sorted_pages} -> sorted_pages end)
     |> middle_sum()
