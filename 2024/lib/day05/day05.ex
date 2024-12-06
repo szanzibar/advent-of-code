@@ -53,29 +53,6 @@ defmodule AoC2024.Day05 do
     Enum.group_by(rules, &List.first(&1), &List.last(&1))
   end
 
-  defp sort_page_list(page_list, rule_map) do
-    page_list
-    |> Enum.map(fn pages ->
-      Enum.sort(pages, &rule_sorter(&1, &2, rule_map))
-    end)
-  end
-
-  defp rule_sorter(left, right, rule_map) do
-    # true if left is before right
-
-    # I STILL CAN'T BELIEVE THIS IS ALL THAT'S NEEDED FOR VALID RULES
-    # THIS USED TO BE SO MUCH MORE COMPLICATED!!!!!
-    right in Map.get(rule_map, left, [])
-  end
-
-  defp middle_sum(page_lists) do
-    page_lists
-    |> Enum.map(fn valid_pages ->
-      Enum.at(valid_pages, Integer.floor_div(Enum.count(valid_pages), 2)) |> String.to_integer()
-    end)
-    |> Enum.sum()
-  end
-
   @doc """
     iex> part1(AoC2024.Day05.Input.test_input())
     143
@@ -108,5 +85,28 @@ defmodule AoC2024.Day05 do
     |> Enum.reject(fn {un_sorted, sorted} -> un_sorted == sorted end)
     |> Enum.map(fn {_, sorted_pages} -> sorted_pages end)
     |> middle_sum()
+  end
+
+  defp sort_page_list(page_list, rule_map) do
+    page_list
+    |> Enum.map(fn pages ->
+      Enum.sort(pages, &rule_sorter(&1, &2, rule_map))
+    end)
+  end
+
+  defp rule_sorter(left, right, rule_map) do
+    # true if left is before right
+
+    # I STILL CAN'T BELIEVE THIS IS ALL THAT'S NEEDED FOR VALID RULES
+    # THIS USED TO BE SO MUCH MORE COMPLICATED!!!!!
+    right in Map.get(rule_map, left, [])
+  end
+
+  defp middle_sum(page_lists) do
+    page_lists
+    |> Enum.map(fn valid_pages ->
+      Enum.at(valid_pages, Integer.floor_div(Enum.count(valid_pages), 2)) |> String.to_integer()
+    end)
+    |> Enum.sum()
   end
 end
