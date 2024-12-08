@@ -39,10 +39,10 @@ defmodule AoC2024.Day08 do
     |> Enum.reduce(map, fn {_freq, pairs}, acc_map ->
       pairs
       |> Enum.reduce(acc_map, fn {{col1, row1}, {col2, row2}}, inner_acc_map ->
-        col_offset = col1 - col2
-        row_offset = row1 - row2
-        new_coord1 = {col1 + col_offset, row1 + row_offset}
-        new_coord2 = {col2 + col_offset * -1, row2 + row_offset * -1}
+        c_offset = col1 - col2
+        r_offset = row1 - row2
+        new_coord1 = {col1 + c_offset, row1 + r_offset}
+        new_coord2 = {col2 + c_offset * -1, row2 + r_offset * -1}
 
         add_antinode_list(inner_acc_map, [new_coord1, new_coord2])
       end)
@@ -116,38 +116,43 @@ defmodule AoC2024.Day08 do
   end
 
   defp build_antinode_map2(pairs_by_freq, map) do
-    {{max_col, _}, _} = Enum.max_by(map, fn {{col, _}, _} -> col end)
-    {{_, max_row}, _} = Enum.max_by(map, fn {{_, row}, _} -> row end)
+    {c_max, r_max} = get_maxes(map)
 
     pairs_by_freq
     |> Enum.reduce(map, fn {_freq, pairs}, acc_map ->
       pairs
-      |> Enum.reduce(acc_map, fn {{col1, row1}, {col2, row2}}, inner_acc_map ->
-        col_offset = col1 - col2
-        row_offset = row1 - row2
+      |> Enum.reduce(acc_map, fn {{col1, row1}, {col2, row2}}, acc_map ->
+        c_offset = col1 - col2
+        r_offset = row1 - row2
 
         new_coords_pos =
-          next_coord({col2, row2}, {col_offset, row_offset}, {max_col, max_row}, [])
+          next_coord({col2, row2}, {c_offset, r_offset}, {c_max, r_max})
 
         new_coords_neg =
-          next_coord({col1, row1}, {col_offset * -1, row_offset * -1}, {max_col, max_row}, [])
+          next_coord({col1, row1}, {c_offset * -1, r_offset * -1}, {c_max, r_max})
 
-        add_antinode_list(inner_acc_map, new_coords_pos ++ new_coords_neg)
+        add_antinode_list(acc_map, new_coords_pos ++ new_coords_neg)
       end)
     end)
     |> print_map()
   end
 
-  defp next_coord({col, row}, {c_offset, r_offset}, {c_max, r_max}, acc)
-       when col + c_offset > c_max or row + r_offset > r_max or col + c_offset < 0 or
-              row + r_offset < 0,
+  defp get_maxes(map) do
+    {{c_max, _}, _} = Enum.max_by(map, fn {{col, _}, _} -> col end)
+    {{_, r_max}, _} = Enum.max_by(map, fn {{_, row}, _} -> row end)
+
+    {c_max, r_max}
+  end
+
+  defp next_coord(coord, offsets, maxes, acc \\ [])
+
+  defp next_coord({col, row}, _offsets, {c_max, r_max}, [_hd | acc])
+       when col > c_max or row > r_max or col < 0 or row < 0,
        do: acc
 
   defp next_coord({col, row}, {c_offset, r_offset}, maxes, acc) do
     new_coord = {col + c_offset, row + r_offset}
-    new_acc = [new_coord | acc]
-
-    next_coord(new_coord, {c_offset, r_offset}, maxes, new_acc)
+    next_coord(new_coord, {c_offset, r_offset}, maxes, [new_coord | acc])
   end
 
   defp add_antinode_list(map, coords) do
