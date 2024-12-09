@@ -7,6 +7,22 @@ defmodule AoC2024.Day09 do
 
   I've thought of a much more efficient way to do this, but I don't know if it's a step in the wrong direction for part 2.
   Eh. I think I'll just go for it. It should be a better way for part 2 I bet.
+
+  new plan:
+  * create parsed_input the same as now.
+  * a reversed one
+  * loop through list
+    * split by first "."
+    * split second section by first non "."
+    * get count of empties
+    * split reversed list by count of non "."
+    * Place reversed section, empties removed, at end of first split from original list
+    * Remove same section from end.
+
+    God explaining the plan is too confusing let's just do it
+
+  The new plan is much faster
+  I had another problem where there was overlap of the very end, but is now resolved.
   """
 
   def parse_input(input) do
@@ -32,22 +48,51 @@ defmodule AoC2024.Day09 do
   end
 
   @doc """
-    iex> parse_input(AoC2024.Day09.Input.test_input()) |> Enum.join()
-    "00...111...2...333.44.5555.6666.777.888899"
+    # iex> parse_input(AoC2024.Day09.Input.test_input()) |> Enum.join()
+    # "00...111...2...333.44.5555.6666.777.888899"
 
     iex> part1(AoC2024.Day09.Input.test_input())
     1928
 
     iex> part1(AoC2024.Day09.Input.input())
-    nil
-    > 6398343689624
+    6398608069280
+    # > 6398343689624
+    # < 6398872404185
 
   """
   def part1(input) do
     list = parse_input(input) |> dbg
-    list |> Enum.reverse() |> dbg
-    move_right_to_empty(list) |> calculate_checksum
-    # move_right_to_empty(map) |> print |> calculate_checksum()
+    reversed = list |> Enum.reverse()
+
+    move_section(list, reversed, [])
+    |> calculate_checksum()
+  end
+
+  def move_section([], _, acc), do: acc
+
+  def move_section(list, reversed, acc) do
+    {front, back} = Enum.split_while(list, &(&1 != "."))
+    {empties, back} = Enum.split_while(back, &(&1 == "."))
+
+    reversed = reversed |> Enum.drop((length(front) + length(empties)) * -1)
+
+    {reversed, reversed_section} = take_while(reversed, length(empties), [])
+    section_length = length(reversed_section)
+    reversed_section = reversed_section |> Enum.reject(&(&1 == "."))
+    back = back |> Enum.drop(section_length * -1)
+
+    move_section(back, reversed, acc ++ front ++ reversed_section)
+  end
+
+  defp take_while(list, 0, acc), do: {list, Enum.reverse(acc)}
+  defp take_while([], _, acc), do: {[], Enum.reverse(acc)}
+
+  defp take_while(["." | list], count, acc) do
+    take_while(list, count, ["." | acc])
+  end
+
+  defp take_while([hd | list], count, acc) do
+    take_while(list, count - 1, [hd | acc])
   end
 
   defp calculate_checksum(list) do
@@ -55,32 +100,6 @@ defmodule AoC2024.Day09 do
     |> Enum.with_index()
     |> Enum.map(fn {value, index} -> value * index end)
     |> Enum.sum()
-    |> dbg
-  end
-
-  defp move_right_to_empty(list) do
-    min_empty_index = get_min_empty_index(list)
-
-    if is_nil(min_empty_index) do
-      list
-    else
-      {popped, list} = pop_top(list)
-      List.replace_at(list, min_empty_index, popped) |> move_right_to_empty()
-    end
-  end
-
-  defp get_min_empty_index(list) do
-    Enum.find_index(list, &(&1 == "."))
-  end
-
-  defp pop_top(list) do
-    {popped, list} = List.pop_at(list, -1)
-
-    if popped == "." do
-      pop_top(list)
-    else
-      {popped, list}
-    end
   end
 
   defp print(list) do
