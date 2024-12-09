@@ -1,107 +1,94 @@
 defmodule AoC2024.Day09 do
+  @moduledoc """
+  I have another situation where the example works fine and the real data doesn't.
+
+  * I've done some spot checks and it appears that parsing the input is correct, after manually checking both ends
+  * I've also done some spot checks of the moved list... and it appears everything is the correct spot.
+
+  I've thought of a much more efficient way to do this, but I don't know if it's a step in the wrong direction for part 2.
+  Eh. I think I'll just go for it. It should be a better way for part 2 I bet.
+  """
+
   def parse_input(input) do
     input
     |> String.trim()
     |> String.graphemes()
     |> Enum.map(&String.to_integer/1)
     |> Enum.chunk_every(2)
-    |> dbg
-    |> Enum.reduce({%{}, 0, 0}, fn [size | space], {acc_map, acc_index, acc_id} ->
+    |> Enum.reduce({[], 0}, fn [size | space], {acc_list, acc_index} ->
       space =
         case space do
           [] -> 0
           [space] -> space
         end
 
-      space_index = size + acc_index
+      list = List.duplicate(acc_index, size)
 
-      map =
-        acc_index..(space_index - 1)
-        |> Enum.reduce(acc_map, fn index, map ->
-          Map.put(map, index, acc_id)
-        end)
+      spaces = List.duplicate(".", space)
 
-      map =
-        if space > 0 do
-          space_index..(space_index + space - 1)
-          |> Enum.reduce(map, fn index, map ->
-            Map.put(map, index, ".")
-          end)
-        else
-          map
-        end
-
-      {map, space_index + space, acc_id + 1}
+      {acc_list ++ list ++ spaces, acc_index + 1}
     end)
-    |> then(fn {map, _, _} -> map end)
-    |> dbg
+    |> then(fn {list, _} -> list end)
   end
 
   @doc """
+    iex> parse_input(AoC2024.Day09.Input.test_input()) |> Enum.join()
+    "00...111...2...333.44.5555.6666.777.888899"
+
     iex> part1(AoC2024.Day09.Input.test_input())
     1928
 
     iex> part1(AoC2024.Day09.Input.input())
     nil
+    > 6398343689624
 
   """
   def part1(input) do
-    map = parse_input(input)
-    move_right_to_empty(map) |> print |> calculate_checksum()
+    list = parse_input(input) |> dbg
+    list |> Enum.reverse() |> dbg
+    move_right_to_empty(list) |> calculate_checksum
+    # move_right_to_empty(map) |> print |> calculate_checksum()
   end
 
-  defp calculate_checksum(map) do
-    Enum.map(map, fn {key, value} -> key * value end) |> Enum.sum() |> dbg
+  defp calculate_checksum(list) do
+    list
+    |> Enum.with_index()
+    |> Enum.map(fn {value, index} -> value * index end)
+    |> Enum.sum()
+    |> dbg
   end
 
-  defp move_right_to_empty(map) do
-    min_empty = get_min_empty(map)
+  defp move_right_to_empty(list) do
+    min_empty_index = get_min_empty_index(list)
 
-    dbg(min_empty)
-
-    if is_nil(min_empty) do
-      map
+    if is_nil(min_empty_index) do
+      list
     else
-      {popped, map} = pop_top(map)
-      Map.put(map, min_empty, popped) |> move_right_to_empty()
+      {popped, list} = pop_top(list)
+      List.replace_at(list, min_empty_index, popped) |> move_right_to_empty()
     end
   end
 
-  defp get_min_empty(map) do
-    {first_empty_index, _} =
-      map
-      |> Enum.filter(fn {_key, value} -> value == "." end)
-      |> Enum.min_by(
-        fn
-          {key, _value} -> key
-        end,
-        &<=/2,
-        fn -> {nil, nil} end
-      )
-
-    first_empty_index
+  defp get_min_empty_index(list) do
+    Enum.find_index(list, &(&1 == "."))
   end
 
-  defp get_max_index(map), do: map_size(map) - 1
-
-  defp pop_top(map) do
-    {popped, map} = Map.pop(map, get_max_index(map))
+  defp pop_top(list) do
+    {popped, list} = List.pop_at(list, -1)
 
     if popped == "." do
-      pop_top(map)
+      pop_top(list)
     else
-      {popped, map}
+      {popped, list}
     end
   end
 
-  defp print(map) do
-    Map.to_list(map)
-    |> Enum.sort()
-    |> Enum.map(fn {_k, val} -> val end)
+  defp print(list) do
+    list
     |> Enum.join()
     |> IO.inspect()
 
-    map
+    list
   end
 
   @doc """
