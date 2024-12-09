@@ -23,6 +23,10 @@ defmodule AoC2024.Day09 do
 
   The new plan is much faster
   I had another problem where there was overlap of the very end, but is now resolved.
+
+  I think the refactor to do it in chunks will really help with part 2
+
+  I'm reasonably happy with my part 2, so I'm not going to cleanup part1. It took me several hours today!
   """
 
   def parse_input(input) do
@@ -61,16 +65,16 @@ defmodule AoC2024.Day09 do
 
   """
   def part1(input) do
-    list = parse_input(input) |> dbg
+    list = parse_input(input)
     reversed = list |> Enum.reverse()
 
     move_section(list, reversed, [])
     |> calculate_checksum()
   end
 
-  def move_section([], _, acc), do: acc
+  defp move_section([], _, acc), do: acc
 
-  def move_section(list, reversed, acc) do
+  defp move_section(list, reversed, acc) do
     {front, back} = Enum.split_while(list, &(&1 != "."))
     {empties, back} = Enum.split_while(back, &(&1 == "."))
 
@@ -102,23 +106,87 @@ defmodule AoC2024.Day09 do
     |> Enum.sum()
   end
 
-  defp print(list) do
-    list
-    |> Enum.join()
-    |> IO.inspect()
+  def parse_input2(input) do
+    input
+    |> String.trim()
+    |> String.graphemes()
+    |> Enum.map(&String.to_integer/1)
+    |> Enum.chunk_every(2)
+    |> Enum.reduce({[], 0}, fn [size | space], {acc_list, acc_index} ->
+      space =
+        case space do
+          [] -> 0
+          [space] -> space
+        end
 
-    list
+      {[{".", space}, {acc_index, size} | acc_list], acc_index + 1}
+    end)
+    |> then(fn {list, _} -> Enum.reverse(list) |> Enum.reject(fn {_k, v} -> v == 0 end) end)
   end
 
   @doc """
-    # iex> part2(AoC2024.Day09.Input.test_input())
-    # nil
+    iex> part2(AoC2024.Day09.Input.test_input())
+    2858
 
-    # iex> part2(AoC2024.Day09.Input.input())
-    # nil
+    iex> part2(AoC2024.Day09.Input.input())
+    6427437134372
 
   """
   def part2(input) do
-    parse_input(input)
+    list = parse_input2(input)
+    reversed_chunks = list |> Enum.reverse() |> Enum.reject(fn {k, _v} -> k == "." end)
+
+    move_section2(list, reversed_chunks) |> calculate_checksum2()
+  end
+
+  defp move_section2(list, []), do: list
+
+  defp move_section2(list, [{_, end_chunk_size} = end_chunk | reversed_chunks]) do
+    first_valid_space =
+      Enum.find_index(list, fn {k, v} -> k == "." && v >= end_chunk_size end)
+
+    chunk_existing_index = Enum.find_index(list, &(&1 == end_chunk))
+
+    list =
+      if is_nil(first_valid_space) || chunk_existing_index < first_valid_space do
+        list
+      else
+        remove_chunk(list, end_chunk)
+        |> List.update_at(first_valid_space, fn {".", space} ->
+          [end_chunk, {".", space - end_chunk_size}]
+        end)
+        |> List.flatten()
+        |> merge_empties()
+      end
+
+    move_section2(list, reversed_chunks)
+  end
+
+  defp remove_chunk(list, {_, chunk_size} = chunk) do
+    reversed_list = Enum.reverse(list)
+    chunk_index = reversed_list |> Enum.find_index(&(&1 == chunk))
+
+    List.replace_at(reversed_list, chunk_index, {".", chunk_size}) |> Enum.reverse()
+  end
+
+  defp merge_empties(list) do
+    list
+    |> Enum.reduce([], fn
+      {".", count}, [{".", acc_count} | acc] -> [{".", count + acc_count} | acc]
+      {".", 0}, acc -> acc
+      chunk, acc -> [chunk | acc]
+    end)
+    |> Enum.reverse()
+  end
+
+  defp calculate_checksum2(list) do
+    list
+    |> Enum.flat_map(fn {value, count} ->
+      List.duplicate(value, count)
+    end)
+    |> Enum.with_index()
+    |> Enum.reject(fn {value, _index} -> value == "." end)
+    |> Enum.map(fn {value, index} -> value * index end)
+    |> Enum.sum()
   end
 end
