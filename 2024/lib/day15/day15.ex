@@ -1,4 +1,6 @@
 defmodule AoC2024.Day15 do
+  import Utils
+
   def parse_input(input) do
     [grid, moves] = input |> String.trim() |> String.split("\n\n")
 
@@ -56,7 +58,7 @@ defmodule AoC2024.Day15 do
     move_robot(grid, moves)
   end
 
-  defp push_object(false, grid), do: grid
+  defp push_object(false, moves), do: moves
 
   defp push_object({true, moves}, grid) do
     {deletes, moves} = Enum.split_with(moves, fn {_coord, char} -> char == "." end)
@@ -125,19 +127,6 @@ defmodule AoC2024.Day15 do
   defp coord_offset("^"), do: {-1, 0}
   defp coord_offset(">"), do: {0, 1}
   defp coord_offset("v"), do: {1, 0}
-
-  defp print_map(map, label \\ "") do
-    IO.inspect("")
-    IO.inspect(label)
-
-    Enum.sort_by(map, fn {coord, _} -> coord end)
-    |> Enum.chunk_by(fn {{row, _col}, _} -> row end)
-    |> Enum.map(fn row ->
-      row |> Enum.map(fn {_coord, value} -> value end) |> Enum.join("") |> IO.inspect()
-    end)
-
-    map
-  end
 
   # PART 2
   def parse_input2(input) do

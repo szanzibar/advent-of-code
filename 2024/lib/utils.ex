@@ -17,4 +17,17 @@ defmodule Utils do
       [limit: :infinity, printable_limit: :infinity, pretty: true, charlists: :as_lists] ++ opts
     )
   end
+
+  def print_map(map, label \\ "") do
+    IO.inspect("")
+    IO.inspect(label)
+
+    Enum.sort_by(map, fn {coord, _} -> coord end)
+    |> Enum.chunk_by(fn {{row, _col}, _} -> row end)
+    |> Enum.map(fn row ->
+      row |> Enum.map(fn {_coord, value} -> value end) |> Enum.join("") |> IO.inspect()
+    end)
+
+    map
+  end
 end
