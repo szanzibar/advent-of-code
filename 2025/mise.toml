@@ -1,0 +1,7 @@
+[tools]
+erlang = "28.2"
+elixir = "1.19.4-otp-28"
+
+[settings]
+experimental = true
+disable_backends = ["asdf"]
