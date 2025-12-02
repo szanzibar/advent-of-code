@@ -1,3 +1,6 @@
 .git-crypt-key
 
 dump.log
+
+.expert
+.DS_Store
