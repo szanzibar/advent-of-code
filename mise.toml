@@ -1,6 +1,6 @@
 [tools]
-erlang = "28.2"
-elixir = "1.19.4-otp-28"
+erlang = "27.3.1"
+elixir = "1.18.3-otp-27"
 
 [settings]
 experimental = true
